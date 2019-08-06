@@ -81,11 +81,15 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
         header,
         timestamp,
         content_type,
-        content_length,
-        body
+        content_length
+        
     );
 
-    printf("Build response: %s\n", response)
+    printf("Build response: %s\n", response);
+
+    //writing response
+    memcpy(response * response_length, body, content_length);
+    response_length += content_length;
 
     int rv = send(fd, response, response_length, 0);
 
@@ -126,7 +130,9 @@ void resp_404(int fd)
     char *mime_type;
 
     // Fetch the 404.html file
-    snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
+    //snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
+    snprintf(filepath, sizeof filepath, "%s/cat.jpg", SERVER_ROOT);
+
     filedata = file_load(filepath);
 
     if (filedata == NULL) {
@@ -232,6 +238,9 @@ int main(void)
             perror("accept");
             continue;
         }
+
+        //invoke response 404
+        resp_404(newfd);
 
         // Print out a message that we got the connection
         inet_ntop(their_addr.ss_family,
