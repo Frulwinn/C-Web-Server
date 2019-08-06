@@ -56,8 +56,11 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
     // Build HTTP response and store it in response
 
     //implementing time stamp
+    //gives an integer
     time_t t = time(NULL);
 
+    //build local time on t
+    //this expects a pointer and gets and address
     struct tm *local_time = localtime(&t);
 
     char *timestamp = asctime(local_time);
@@ -72,7 +75,7 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
         "Date: %s"
         "Connection: close\n"
         "Content-Type: %s\n"
-        "Content-Length %d\n"
+        "Content-Length: %d\n"
         "\n"
         "%s\n",
         header,
