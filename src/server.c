@@ -108,12 +108,15 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 void get_d20(int fd)
 {
     // Generate a random number between 1 and 20 inclusive
+    char random_num[8];
+    sprintf(random_num, "%d\n", (rand() % 20) + 1);
     
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
 
     // Use send_response() to send it back as text/plain data
+    send_response(fd, "HTTP/1.1 200 OK", "text/plain", random_num, strlen(random_num));
 
     ///////////////////
     // IMPLEMENT ME! //
@@ -169,6 +172,7 @@ char *find_start_of_body(char *header)
     ///////////////////
     // IMPLEMENT ME! // (Stretch)
     ///////////////////
+    return NULL;
 }
 
 /**
