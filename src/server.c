@@ -52,6 +52,7 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 {
     const int max_response_size = 262144;
     char response[max_response_size];
+    int response_length;
 
     //implementing time stamp
     time_t t = time(NULL);
@@ -63,7 +64,7 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 
     // Send it all!
     //store it in response and pass in the following
-    int response_length = sprintf(response,
+    response_length = sprintf(response,
         "%s\n"
         "Date: %s\n"
         "Content-Type: %s\n"
@@ -97,7 +98,7 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
  */
 void get_d20(int fd)
 {
-    (void)fd;
+    //(void)fd;
     // Generate a random number between 1 and 20 inclusive
     char random_num[8];
     sprintf(random_num, "%d\n", (rand() % 20) + 1);
@@ -116,8 +117,6 @@ void resp_404(int fd)
     char *mime_type;
 
     // Fetch the 404.html file
-    //snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT);
-
     snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
     //snprintf(filepath, sizeof filepath, "%s/cat.jpg", SERVER_ROOT);
 
@@ -205,13 +204,15 @@ void handle_http_request(int fd, struct cache *cache)
     //printf("%s\n%s\n", method, path);
     // If GET, handle the get endpoints
     if (strcmp(method, "GET") == 0) {
-        // Check if it's /d20 and handle that special case
-        if (strcmp(path, "/d20") == 0) {
-            get_d20(fd);
-        } else {
-            // Otherwise serve the requested file by calling get_file()
-            resp_404(fd);
-        }
+        get_file(fd, cache, path);
+
+    // Check if it's /d20 and handle that special case
+    } else if (strcmp(path, "/d20") == 0) {
+        get_d20(fd);
+
+    } else {
+        resp_404(fd);
+        
     }
     // (Stretch) If POST, handle the post request
 
