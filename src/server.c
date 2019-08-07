@@ -116,9 +116,9 @@ void resp_404(int fd)
     char *mime_type;
 
     // Fetch the 404.html file
-    snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT);
+    //snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT);
 
-    //snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
+    snprintf(filepath, sizeof filepath, "%s/404.html", SERVER_FILES);
     //snprintf(filepath, sizeof filepath, "%s/cat.jpg", SERVER_ROOT);
 
     filedata = file_load(filepath);
@@ -206,7 +206,7 @@ void handle_http_request(int fd, struct cache *cache)
     // If GET, handle the get endpoints
     if (strcmp(method, "GET") == 0) {
         // Check if it's /d20 and handle that special case
-        if (strcmp(path, "/d20" == 0)) {
+        if (strcmp(path, "/d20") == 0) {
             get_d20(fd);
         } else {
             // Otherwise serve the requested file by calling get_file()
