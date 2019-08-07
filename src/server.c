@@ -107,6 +107,7 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
  */
 void get_d20(int fd)
 {
+    (void)fd;
     // Generate a random number between 1 and 20 inclusive
     char random_num[8];
     sprintf(random_num, "%d\n", (rand() % 20) + 1);
@@ -156,9 +157,31 @@ void resp_404(int fd)
  */
 void get_file(int fd, struct cache *cache, char *request_path)
 {
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
+    // (void)fd;
+    // (void)cache;
+    // (void)request_path;
+    
+    //random number
+    char filepath[4096];
+    char *mime_type;
+    //stores a string in a variable
+    snprintf(filepath, "%s%s", SERVER_ROOT, request_path);
+    //once we have the path we load file
+    filedata = file_load(filepath);
+    //handling the case of '/'
+    if (filedata == NULL) {
+        snprintf(filepath, sizeof filepath, "%s/index.html", SERVER_ROOT);
+        filedata = file_load(filepath);
+        //handles 404
+        if (filedata == NULL) {
+            resp_404(fd);
+            return;
+        }
+    }
+    mime_type = mime_type_get(filepath);
+    send_response(fd, "HTTP/1.1 200 OK", mime_type, filedata->data, filedata->size);
+
+    file_free(filedata);
 }
 
 /**
@@ -169,6 +192,7 @@ void get_file(int fd, struct cache *cache, char *request_path)
  */
 char *find_start_of_body(char *header)
 {
+    (void)header;
     ///////////////////
     // IMPLEMENT ME! // (Stretch)
     ///////////////////
@@ -182,6 +206,8 @@ void handle_http_request(int fd, struct cache *cache)
 {
     const int request_buffer_size = 65536; // 64K
     char request[request_buffer_size];
+    char method[128]; //buffer
+    char path[8192]; //buffer
 
     // Read request
     int bytes_recvd = recv(fd, request, request_buffer_size - 1, 0);
@@ -207,8 +233,10 @@ void handle_http_request(int fd, struct cache *cache)
         } else {
             // Otherwise serve the requested file by calling get_file()
             resp_404(fd);
+        }
     }
     // (Stretch) If POST, handle the post request
+
 }
 
 /**
