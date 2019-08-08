@@ -9,7 +9,7 @@
  */
 struct cache_entry *alloc_entry(char *path, char *content_type, void *content, int content_length)
 {
-    struct cach_entry *new_entry = malloc(sizeof(*new_entry));
+    struct cache_entry *new_entry = malloc(sizeof(*new_entry));
     //strdup is mallocing it is creating a copy of
     new_entry->path = strdup(path);
     new_entry->content_type = strdup(content_type);
@@ -35,7 +35,7 @@ void free_entry(struct cache_entry *entry)
    free(entry->content);
    free(entry);
 
-   printf("entry is free!\n")
+   printf("entry is free!\n");
 }
 
 /**
@@ -144,18 +144,17 @@ void cache_free(struct cache *cache)
 //void just putting something on but not returning anything
 void cache_put(struct cache *cache, char *path, char *content_type, void *content, int content_length)
 {
-    //check the max capacity if the cache is greater than max size
-    if (cache->cur_size > cache->max_size) {
-        //remove the cache entry at the tail of the linked list
-        struct cache_entry *old_tail = dllist_remove_tail(cache);
-
-        //remove that same entry from the hashtable, using the entry's path and the hashtable_delete function
-        hashtable_delete(cache->index, old_tail->path);
-
-        //free cache entry
-        free_entry(old_tail);
-      
-    }
+    struct cache_entry *ce = alloc_entry(path, content_type, content, content_length);
+    dllist_insert_head(cache, ce);
+    hashtable_put(cache->index, path, ce);
+    cache->cur_size++;
+    if(cache->cur_size > cache->max_size) {
+        struct cache_entry *oldTail = dllist_remove_tail(cache);
+        hashtable_delete(cache->index, oldTail->path);
+        free_entry(oldTail);
+        printf("Current size: %d, max size: %d\n", cache->cur_size, cache->max_size);
+        
+    }	
 }
 
 /**
@@ -173,6 +172,6 @@ struct cache_entry *cache_get(struct cache *cache, char *path)
     }
     //move it to the head of the list
     dllist_move_to_head(cache, ce);
-    
+
     return ce;
 }

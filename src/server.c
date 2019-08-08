@@ -139,17 +139,21 @@ void resp_404(int fd)
 void get_file(int fd, struct cache *cache, char *request_path)
 {
     // (void)fd;
-    (void)cache;
+    //(void)cache;
     // (void)request_path;
 
     //random number
     char filepath[4096];
     struct file_data *filedata;
     char *mime_type;
+
+    struct cache_entry *ce = cache_get(cache, request_path);
+
     //stores a string in a variable
     snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
     //once we have the path we load file
     filedata = file_load(filepath);
+
     //handling the case of '/'
     if (filedata == NULL) {
         snprintf(filepath, sizeof filepath, "%s/index.html", SERVER_ROOT);
@@ -159,10 +163,23 @@ void get_file(int fd, struct cache *cache, char *request_path)
             resp_404(fd);
             return;
         }
+        //request_path not in cache
+        if (ce == NULL) {
+            //fetch file
+            snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
+        }
+        return;
     }
     mime_type = mime_type_get(filepath);
+    cache_put(cache, request_path, mime_type, filedata->data, filedata->size);
     send_response(fd, "HTTP/1.1 200 OK", mime_type, filedata->data, filedata->size); 
     file_free(filedata);
+
+    } else {
+        printf("CACHE HIT: %s\n", request_path);
+        // if it was in the cache, just send it
+        send_response(fd, "HTTP/1.1 200 OK", ce->content_type, ce->content, ce->content_length);
+    }
 }
 
 /**
@@ -201,7 +218,7 @@ void handle_http_request(int fd, struct cache *cache)
 
     // Read the first two components of the first line of the request 
     sscanf(request, "%s %s", method, path);
-    //printf("%s\n%s\n", method, path);
+    printf("%s\n%s\n", method, path);
     // If GET, handle the get endpoints
     if (strcmp(method, "GET") == 0) {
         get_file(fd, cache, path);
