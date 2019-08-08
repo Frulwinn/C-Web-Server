@@ -13,8 +13,9 @@ struct cache_entry *alloc_entry(char *path, char *content_type, void *content, i
     //strdup is mallocing it is creating a copy of
     new_entry->path = strdup(path);
     new_entry->content_type = strdup(content_type);
-    new entry->content_length = content_length;
+    new_entry->content_length = content_length;
     new_entry->content = malloc(content_length);
+
     //make your own copy of through memcpy
     memcpy(new_entry->content, content, content_length);
 
@@ -106,6 +107,7 @@ struct cache *cache_create(int max_size, int hashsize)
 {
     struct cache *c = malloc(sizeof(struct cache));
     c->index = hashtable_create(hashsize, NULL);
+    //c->head = c->tail = NULL;
     c->head = NULL;
     c->tail = NULL;
     c->max_size = max_size;
@@ -138,11 +140,22 @@ void cache_free(struct cache *cache)
  * 
  * NOTE: doesn't check for duplicate cache entries
  */
+//adding to the head of the linked list
+//void just putting something on but not returning anything
 void cache_put(struct cache *cache, char *path, char *content_type, void *content, int content_length)
 {
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
+    //check the max capacity if the cache is greater than max size
+    if (cache->cur_size > cache->max_size) {
+        //remove the cache entry at the tail of the linked list
+        struct cache_entry *old_tail = dllist_remove_tail(cache);
+
+        //remove that same entry from the hashtable, using the entry's path and the hashtable_delete function
+        hashtable_delete(cache->index, old_tail->path);
+
+        //free cache entry
+        free_entry(old_tail);
+      
+    }
 }
 
 /**
