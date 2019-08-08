@@ -163,7 +163,16 @@ void cache_put(struct cache *cache, char *path, char *content_type, void *conten
  */
 struct cache_entry *cache_get(struct cache *cache, char *path)
 {
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
+    //find the entry
+    struct cache_entry *ce = hashtable_get(cache->index, path);
+
+    //try to find the cache entry pointer by path in the hash table
+    if (ce == NULL) {
+        //if not found, return NULL
+        return NULL;
+    }
+    //move it to the head of the list
+    dllist_move_to_head(cache, ce);
+    
+    return ce;
 }
